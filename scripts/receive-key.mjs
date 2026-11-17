@@ -40,9 +40,20 @@ const server = http.createServer((req, res) => {
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
 
+  if (/^https?:\/\//i.test(req.headers.origin ?? "")) {
+    res.writeHead(403); // web pages may not use this, only the add-on
+    res.end();
+    return;
+  }
   if (req.method === "OPTIONS") {
     res.writeHead(204);
     res.end();
+    return;
+  }
+  if (req.method === "GET" && req.url === "/status") {
+    // Lets the add-on's popup show that something on this Mac is waiting for the key.
+    res.writeHead(200, { "Content-Type": "application/json" });
+    res.end(JSON.stringify({ ok: true, app: "substack-mcp", hasKey: false }));
     return;
   }
   if (req.method !== "POST" || !req.url.startsWith("/key")) {
@@ -98,7 +109,8 @@ const server = http.createServer((req, res) => {
 
 server.on("error", (err) => {
   if (err.code === "EADDRINUSE") {
-    log(`Something is already using port ${PORT}. Close the other grabber window, then run this again.`);
+    log("The Claude app is already open and listening for your key, so this step isn't needed.");
+    log("In Chrome, click the Substack Key Grabber add-on, then: Send my key to Claude now.");
   } else {
     log("Couldn't start the listener: " + err.message);
   }
@@ -107,8 +119,8 @@ server.on("error", (err) => {
 
 server.listen(PORT, "127.0.0.1", () => {
   log("");
-  log("Ready. Now click the Substack Key Grabber button in your browser.");
-  log("This finishes on its own once the key arrives. Press Control + C to cancel.");
+  log("Ready. Waiting for the Substack Key Grabber add-on in your browser.");
+  log("To hurry it, click the add-on, then: Send my key to Claude now. Press Control + C to cancel.");
   log("");
 });
 

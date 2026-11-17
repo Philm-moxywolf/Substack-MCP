@@ -8,14 +8,18 @@ export interface Env {
 }
 
 export function publicationBase(env: Env): string {
-  const pub = env.SUBSTACK_PUBLICATION.trim().replace(/^https?:\/\//, "").replace(/\/+$/, "");
+  // Accept "name", "@name", "name.substack.com", a custom domain, or a pasted address.
+  const pub = env.SUBSTACK_PUBLICATION.trim().replace(/^@/, "").replace(/^https?:\/\//i, "").replace(/\/.*$/, "").toLowerCase();
   return `https://${pub.includes(".") ? pub : `${pub}.substack.com`}`;
 }
 
 function cookieHeader(env: Env): string {
   const raw = env.SUBSTACK_COOKIE?.trim();
   if (!raw) {
-    throw new Error("No Substack key found in Keychain, so draft tools are unavailable. Run ./install.sh again. Read tools still work.");
+    throw new Error(
+      "No Substack key yet, so draft tools are unavailable (read tools still work). " +
+        "Tell the user: open Chrome, make sure the Substack Key Grabber add-on is installed, sign in to Substack, wait a minute, then ask again.",
+    );
   }
   // Accept the bare value or a "name=value" string. Substack sessions appear under either cookie name.
   const value = raw.replace(/^(substack|connect)\.sid=/, "");
@@ -29,7 +33,7 @@ export async function substackFetch(
 ): Promise<any> {
   const headers: Record<string, string> = {
     Accept: "application/json",
-    "User-Agent": "substack-mcp/0.2",
+    "User-Agent": "substack-mcp/0.3",
   };
   if (init.body !== undefined) headers["Content-Type"] = "application/json";
   if (init.auth) {
@@ -47,7 +51,7 @@ export async function substackFetch(
   if (!res.ok) {
     const hint =
       res.status === 401 || res.status === 403
-        ? " (session cookie missing, expired, or not an editor of this publication)"
+        ? " (the Substack sign-in has expired, or this account can't edit this publication. Tell the user: sign in to Substack again in Chrome, wait a minute for the add-on to send the new key, then ask again)"
         : "";
     throw new Error(`Substack ${res.status} on ${init.method ?? "GET"} ${path}${hint}: ${text.slice(0, 300)}`);
   }

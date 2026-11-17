@@ -1,16 +1,19 @@
 {
   "manifest_version": 3,
   "name": "Substack Key Grabber",
-  "version": "1.0.0",
-  "description": "Reads your own Substack sign-in key from this browser and hands it to the substack-mcp setup running on your Mac.",
-  "permissions": ["cookies"],
+  "version": "1.1.0",
+  "description": "Keeps the substack-mcp setup on your Mac supplied with your own Substack sign-in key, by itself. The key only ever goes to your own Mac.",
+  "permissions": ["cookies", "alarms", "storage"],
   "host_permissions": [
     "https://substack.com/",
     "https://*.substack.com/",
     "http://127.0.0.1:8789/"
   ],
+  "background": {
+    "service_worker": "background.js"
+  },
   "action": {
     "default_popup": "popup.html",
-    "default_title": "Grab my Substack key"
+    "default_title": "Substack Key Grabber"
   }
 }

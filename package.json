@@ -1,11 +1,12 @@
 {
   "name": "substack-mcp",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": true,
   "type": "module",
   "scripts": {
     "build": "esbuild src/stdio.ts --bundle --platform=node --format=esm --target=node20 --outfile=dist/substack-mcp.mjs",
     "typecheck": "tsc --noEmit",
+    "pack": "esbuild src/stdio.ts --bundle --platform=node --format=cjs --target=node18 --outfile=claude-extension/server/index.js && npx --yes @anthropic-ai/mcpb pack claude-extension Substack.mcpb",
     "grab": "node scripts/grab-key.mjs",
     "grab:ext": "node scripts/receive-key.mjs",
     "paste-key": "bash scripts/paste-key.sh"

@@ -5,16 +5,18 @@
     <style>
       body {
         font: 14px -apple-system, system-ui, sans-serif;
-        width: 290px;
+        width: 300px;
         padding: 16px;
         margin: 0;
         color: #111;
         background: #fff;
       }
       h1 { font-size: 15px; margin: 0 0 10px; }
+      .row { margin: 0 0 6px; }
       button {
         font-size: 14px;
         padding: 9px 12px;
+        margin-top: 8px;
         width: 100%;
         cursor: pointer;
         border-radius: 6px;
@@ -24,15 +26,15 @@
       }
       button:disabled { opacity: 0.5; cursor: default; }
       #msg { margin-top: 12px; white-space: pre-wrap; line-height: 1.35; }
-      code { background: #eee; padding: 1px 4px; border-radius: 3px; }
     </style>
   </head>
   <body>
     <h1>Substack Key Grabber</h1>
-    <button id="go">Grab my Substack key</button>
-    <div id="msg">
-      Click when Terminal says <b>Ready</b>. (It says that during setup, or after you run <code>npm run grab:ext</code>.)
-    </div>
+    <div class="row" id="substack">Checking Substack...</div>
+    <div class="row" id="claude">Checking Claude...</div>
+    <button id="go">Send my key to Claude now</button>
+    <div id="msg"></div>
+    <script src="shared.js"></script>
     <script src="popup.js"></script>
   </body>
 </html>

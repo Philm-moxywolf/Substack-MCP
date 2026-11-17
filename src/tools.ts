@@ -32,41 +32,51 @@ function clampLimit(limit: unknown, fallback = 12): number {
   return Number.isFinite(n) ? Math.min(Math.max(Math.trunc(n), 1), 50) : fallback;
 }
 
+// The archive pages with a cursor: each reply carries nextCursor, which fetches the page after it.
+async function archivePage(env: Env, params: Record<string, string>, cursor: unknown) {
+  const q = new URLSearchParams(params);
+  if (cursor) q.set("cursor", String(cursor));
+  const res = await substackFetch(env, `/api/v1/archive?${q}`);
+  const posts = (Array.isArray(res) ? res : (res?.posts ?? [])).map(summarizePost);
+  return res?.nextCursor ? { posts, nextCursor: res.nextCursor } : { posts };
+}
+
 export const tools: Tool[] = [
   {
     name: "list_posts",
-    description: "List published posts from the publication's archive, newest first by default.",
+    description:
+      "List published posts from the publication's archive, newest first by default. " +
+      "If the result has nextCursor, pass it back as cursor to get the next page.",
     inputSchema: {
       type: "object",
       properties: {
         limit: { type: "integer", minimum: 1, maximum: 50, default: 12 },
-        offset: { type: "integer", minimum: 0, default: 0 },
+        cursor: { type: "string", description: "nextCursor from the previous page" },
         sort: { type: "string", enum: ["new", "top"], default: "new" },
       },
     },
     annotations: READ_ONLY,
-    async run({ limit, offset = 0, sort = "new" }, env) {
-      const q = new URLSearchParams({ sort, offset: String(offset), limit: String(clampLimit(limit)) });
-      const posts = await substackFetch(env, `/api/v1/archive?${q}`);
-      return (posts ?? []).map(summarizePost);
+    async run({ limit, cursor, sort = "new" }, env) {
+      return archivePage(env, { sort, limit: String(clampLimit(limit)) }, cursor);
     },
   },
   {
     name: "search_posts",
-    description: "Search the publication's published posts by keyword.",
+    description:
+      "Search the publication's published posts by keyword. " +
+      "If the result has nextCursor, pass it back as cursor to get the next page.",
     inputSchema: {
       type: "object",
       properties: {
         query: { type: "string", description: "Search terms" },
         limit: { type: "integer", minimum: 1, maximum: 50, default: 12 },
+        cursor: { type: "string", description: "nextCursor from the previous page" },
       },
       required: ["query"],
     },
     annotations: READ_ONLY,
-    async run({ query, limit }, env) {
-      const q = new URLSearchParams({ sort: "new", search: String(query), offset: "0", limit: String(clampLimit(limit)) });
-      const posts = await substackFetch(env, `/api/v1/archive?${q}`);
-      return (posts ?? []).map(summarizePost);
+    async run({ query, limit, cursor }, env) {
+      return archivePage(env, { sort: "new", search: String(query), limit: String(clampLimit(limit)) }, cursor);
     },
   },
   {

@@ -1,0 +1,50 @@
+{
+  "manifest_version": "0.2",
+  "name": "substack-mcp",
+  "display_name": "Substack",
+  "version": "0.3.0",
+  "description": "Lets Claude read your Substack and save drafts in it. It can never publish or email anyone.",
+  "long_description": "Claude can list and read your published posts, and create or edit drafts in your Substack. A person always presses Publish. It runs on your own Mac and uses your own Substack sign-in, which the Substack Key Grabber browser add-on delivers to your Mac's Keychain. Unofficial: it uses the same private routes Substack's own website uses.",
+  "author": {
+    "name": "Phil Omar Mudhir",
+    "url": "https://github.com/Philm-moxywolf/Substack-MCP"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Philm-moxywolf/Substack-MCP"
+  },
+  "homepage": "https://github.com/Philm-moxywolf/Substack-MCP",
+  "license": "MIT",
+  "server": {
+    "type": "node",
+    "entry_point": "server/index.js",
+    "mcp_config": {
+      "command": "node",
+      "args": ["${__dirname}/server/index.js"],
+      "env": {
+        "SUBSTACK_PUBLICATION": "${user_config.publication}"
+      }
+    }
+  },
+  "user_config": {
+    "publication": {
+      "type": "string",
+      "title": "Your Substack name",
+      "description": "The first part of your Substack address. For janesmith.substack.com, type janesmith. If you use your own web address, type that instead.",
+      "required": true
+    }
+  },
+  "tools": [
+    { "name": "list_posts", "description": "List published posts" },
+    { "name": "search_posts", "description": "Search published posts" },
+    { "name": "get_post", "description": "Read a published post" },
+    { "name": "list_drafts", "description": "List your drafts" },
+    { "name": "get_draft", "description": "Read a draft" },
+    { "name": "create_draft", "description": "Create a draft (never publishes)" },
+    { "name": "update_draft", "description": "Edit a draft (never publishes)" }
+  ],
+  "compatibility": {
+    "platforms": ["darwin"],
+    "runtimes": { "node": ">=18.0.0" }
+  }
+}
